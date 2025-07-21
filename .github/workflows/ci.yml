@@ -2,8 +2,7 @@ name: ci
 
 on:
   push:
-    branches:
-      - [main, dev]
+    branches: [main, dev]
   pull_request:
 
 concurrency:
@@ -21,7 +20,7 @@ jobs:
           - command: flake check
           - command: fmt -- --ci
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: DeterminateSystems/nix-installer-action@v10
       - uses: DeterminateSystems/magic-nix-cache-action@v4
       - run: nix ${{ matrix.command }}
