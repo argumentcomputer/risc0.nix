@@ -24,6 +24,7 @@
 
       packages = perSystemPkgs (pkgs: {
         rust-bin-risc0-latest = pkgs.rust-bin.risc0.latest;
+        cargo-risczero = pkgs.cargo-risczero;
         default = inputs.self.packages.${pkgs.system}.rust-bin-risc0-latest;
       });
 
