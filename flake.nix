@@ -1,5 +1,5 @@
 {
-  description = "";
+  description = "Risc0 Nix Flake";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -32,6 +32,8 @@
         risc0-user-latest = pkgs.callPackage ./shell.nix { };
         default = inputs.self.devShells.${pkgs.system}.risc0-user-latest;
       });
+
+      templates = import ./templates;
 
       formatter = perSystemPkgs (pkgs: pkgs.nixfmt-tree);
     };
