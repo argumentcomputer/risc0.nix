@@ -39,7 +39,15 @@
             overlays = [ risc0.overlays.default ];
           };
 
+          packages = {
+            cargo-r0 = pkgs.cargo-risczero;
+            rust-r0 = pkgs.rust-bin.risc0.latest;
+            r0-home = pkgs.risc0-home;
+          };
+
           devShells.default = pkgs.mkShell {
+            inputsFrom = [ risc0.devShells.${system}.default ];
+            RISC0_HOME = "${pkgs.risc0-home}";
             packages = with pkgs; [
               pkg-config
               openssl
@@ -47,8 +55,6 @@
               gcc
               clang
               rust-analyzer
-              cargo-risczero
-              rust-bin.risc0.latest
             ];
           };
         };

@@ -13,9 +13,8 @@ let
   # Find the latest version using semver comparison
   latestVersion = prev.lib.last (prev.lib.sort prev.lib.versionOlder (prev.lib.attrNames versions));
 
-  cargo-risczero = prev.callPackage ./pkgs/cargo-risczero.nix { };
 in
-{
+rec {
   # Extend rust-bin namespace to include RISC Zero toolchains
   rust-bin = (prev.rust-bin or { }) // {
     risc0 = risc0Toolchains // {
@@ -23,12 +22,19 @@ in
     };
   };
 
-  cargo-risczero = cargo-risczero;
-
   # Create a RISC Zero-specific rustPlatform
-  risc0Platform = final.makeRustPlatform {
+  risc0Platform = prev.rustPlatform // {
     rustc = final.rust-bin.risc0.latest;
     cargo = final.rust-bin.risc0.latest;
+  };
+
+  cargo-risczero = prev.callPackage ./pkgs/cargo-risczero.nix {
+    rustPlatform = risc0Platform;
+  };
+
+  risc0-home = prev.callPackage ./pkgs/risc0-home.nix {
+    inherit cargo-risczero;
+    rust-bin-risc0-latest = rust-bin.risc0.latest;
   };
 
   # TODO: This doesn't seem to work

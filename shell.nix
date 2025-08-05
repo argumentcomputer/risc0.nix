@@ -4,8 +4,10 @@
   gcc,
   mkShell,
   rust-bin,
+  risc0-home,
 }:
 mkShell {
+  RISC0_HOME = "${risc0-home}";
   buildInputs = [
     cargo-risczero
     gcc

@@ -2,7 +2,7 @@
 
 ## Nix
 
-Enter a Nix dev shell with `nix develop`
+Enter a Nix dev shell with `nix develop` and then build with `cargo run`
 
 ## Docker
 

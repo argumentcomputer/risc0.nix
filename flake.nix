@@ -4,37 +4,53 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     rust-overlay.url = "github:oxalica/rust-overlay";
-    systems.url = "github:nix-systems/default";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
   outputs =
-    inputs:
-    let
-      overlays = [ inputs.self.overlays.default ];
-      perSystemPkgs =
-        f:
-        inputs.nixpkgs.lib.genAttrs (import inputs.systems) (
-          system: f (import inputs.nixpkgs { inherit overlays system; })
-        );
-    in
-    {
-      overlays = {
-        default = import ./overlay.nix;
+    inputs@{
+      self,
+      nixpkgs,
+      flake-parts,
+      ...
+    }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-darwin"
+        "x86_64-linux"
+      ];
+
+      flake = {
+        overlays.default = import ./overlay.nix;
+        templates = import ./templates;
       };
 
-      packages = perSystemPkgs (pkgs: {
-        rust-bin-risc0-latest = pkgs.rust-bin.risc0.latest;
-        cargo-risczero = pkgs.cargo-risczero;
-        default = inputs.self.packages.${pkgs.system}.rust-bin-risc0-latest;
-      });
+      perSystem =
+        {
+          system,
+          pkgs,
+          ...
+        }:
+        {
+          _module.args.pkgs = import nixpkgs {
+            inherit system;
+            overlays = [ self.overlays.default ];
+          };
 
-      devShells = perSystemPkgs (pkgs: {
-        risc0-user-latest = pkgs.callPackage ./shell.nix { };
-        default = inputs.self.devShells.${pkgs.system}.risc0-user-latest;
-      });
+          packages = {
+            cargo-risczero = pkgs.cargo-risczero;
+            rust-bin-risc0-latest = pkgs.rust-bin.risc0.latest;
+            risc0-home = pkgs.risc0-home;
+          };
 
-      templates = import ./templates;
+          devShells = {
+            default = pkgs.callPackage ./shell.nix { };
+          };
 
-      formatter = perSystemPkgs (pkgs: pkgs.nixfmt-tree);
+          formatter = pkgs.nixfmt-tree;
+
+        };
     };
 }
