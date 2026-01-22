@@ -4,19 +4,34 @@
   gccForLibs,
   lib,
   stdenv,
-  version, # Must be specified
 }:
 let
-  # The known risczero toolchain versions
-  versions = import ../versions.nix;
-  versionData = versions.${version} or (throw "RISC Zero Rust version ${version} not available");
+  version = "1.85.0";
+  srcs = {
+    x86_64-linux = {
+      url = "https://github.com/risc0/rust/releases/download/r0.1.85.0/rust-toolchain-x86_64-unknown-linux-gnu.tar.gz";
+      hash = "sha256-B2dOSbN2FbeNL7J2AcUJCSM8IfHxo6koFlgglySnrMs=";
+    };
+    aarch64-linux = {
+      url = "https://github.com/risc0/rust/releases/download/r0.1.85.0/rust-toolchain-aarch64-unknown-linux-gnu.tar.gz";
+      hash = "sha256-BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=";
+    };
+    x86_64-darwin = {
+      url = "https://github.com/risc0/rust/releases/download/r0.1.85.0/rust-toolchain-x86_64-apple-darwin.tar.gz";
+      hash = "sha256-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=";
+    };
+    aarch64-darwin = {
+      url = "https://github.com/risc0/rust/releases/download/r0.1.85.0/rust-toolchain-aarch64-apple-darwin.tar.gz";
+      hash = "sha256-DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=";
+    };
+  };
   srcData =
-    versionData.src.${stdenv.hostPlatform.system}
+    srcs.${stdenv.hostPlatform.system}
       or (throw "RISC Zero Rust not available for platform ${stdenv.hostPlatform.system}");
   rustHostPlatform = stdenv.hostPlatform.rust.rustcTarget;
 in
 stdenv.mkDerivation {
-  pname = "risc0-toolchain-bin";
+  pname = "risc0-toolchain";
   inherit version;
 
   src = fetchurl {

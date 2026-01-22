@@ -3,13 +3,11 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    rust-overlay.url = "github:oxalica/rust-overlay";
     flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
   outputs =
     inputs@{
-      self,
       nixpkgs,
       flake-parts,
       ...
@@ -23,34 +21,56 @@
       ];
 
       flake = {
-        overlays.default = import ./overlay.nix;
         templates = import ./templates;
       };
 
       perSystem =
-        {
-          system,
-          pkgs,
-          ...
-        }:
-        {
-          _module.args.pkgs = import nixpkgs {
-            inherit system;
-            overlays = [ self.overlays.default ];
+        { system, ... }:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+
+          # The RISC0 Rust toolchain (rustc/cargo with riscv32im-risc0-zkvm-elf target)
+          risc0-toolchain = pkgs.callPackage ./pkgs/risc0-toolchain.nix { };
+
+          # rustPlatform using the RISC0 toolchain (for building cargo-risczero)
+          risc0Platform = pkgs.rustPlatform // {
+            rustc = risc0-toolchain;
+            cargo = risc0-toolchain;
           };
 
+          # cargo-risczero CLI tool
+          cargo-risczero = pkgs.callPackage ./pkgs/cargo-risczero.nix {
+            rustPlatform = risc0Platform;
+          };
+
+          # Mimics ~/.risc0 structure for rzup compatibility
+          risc0-home = pkgs.callPackage ./pkgs/risc0-home.nix {
+            inherit cargo-risczero risc0-toolchain;
+          };
+
+        in
+        {
           packages = {
-            cargo-risczero = pkgs.cargo-risczero;
-            rust-bin-risc0-latest = pkgs.rust-bin.risc0.latest;
-            risc0-home = pkgs.risc0-home;
+            inherit
+              cargo-risczero
+              risc0-toolchain
+              risc0-home
+              ;
+            default = cargo-risczero;
           };
 
           devShells = {
-            default = pkgs.callPackage ./shell.nix { };
+            default = pkgs.mkShell {
+              RISC0_HOME = "${risc0-home}";
+              RISC0_RUST_TOOLCHAIN_PATH = "${risc0-toolchain}";
+              buildInputs = [
+                cargo-risczero
+                pkgs.gcc
+              ];
+            };
           };
 
           formatter = pkgs.nixfmt-tree;
-
         };
     };
 }

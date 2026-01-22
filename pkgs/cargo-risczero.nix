@@ -7,7 +7,6 @@
   openssl,
   nix-update-script,
 }:
-
 rustPlatform.buildRustPackage rec {
   pname = "cargo-risczero";
   version = "2.3.1";
@@ -28,7 +27,6 @@ rustPlatform.buildRustPackage rec {
     RECURSION_SRC_PATH = src-recursion;
   };
 
-  useFetchCargoVendor = true;
   cargoHash = "sha256-4d5ian5U+pEbjPIsO9JO2sShDJrxyAY0KWZxF9ixk5g=";
 
   nativeBuildInputs = [
@@ -42,13 +40,13 @@ rustPlatform.buildRustPackage rec {
   # The tests require network access which is not available in sandboxed Nix builds.
   doCheck = false;
 
-  passthru.updateScript = nix-update-script { };
+  passthru.updateScript = nix-update-script {};
 
   meta = {
     description = "Cargo extension to help create, manage, and test RISC Zero projects";
     mainProgram = "cargo-risczero";
     homepage = "https://risczero.com";
-    license = with lib.licenses; [ asl20 ];
-    maintainers = with lib.maintainers; [ cameronfyfe ];
+    license = with lib.licenses; [asl20];
+    maintainers = with lib.maintainers; [cameronfyfe];
   };
 }
