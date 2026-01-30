@@ -2,9 +2,8 @@
   stdenv,
   cargo-risczero,
   risc0-toolchain,
+  risc0-cpp-toolchain,
 }:
-# TODO:
-# - Add cpp with symlink to toolchain
 let
   rustTarget = stdenv.hostPlatform.rust.rustcTarget;
 in
@@ -29,6 +28,8 @@ in
       for d in cargo-risczero r0vm; do
         ln -s ${cargo-risczero}/bin/$d "$extension/$d"
       done
+
+      ln -s ${risc0-cpp-toolchain}/riscv32im-linux-x86_64 $out/cpp
 
       mkdir -p $out/tmp
       touch $out/.rzup
