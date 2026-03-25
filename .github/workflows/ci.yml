@@ -28,9 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "./templates/hello-world -> target"
       - name: Replace risc0.nix URL with local path
         run: |
           sed -i 's|url = "github:argumentcomputer/risc0.nix"|url = "path:../.."|' flake.nix
