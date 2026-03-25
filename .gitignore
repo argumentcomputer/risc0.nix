@@ -1,2 +1,3 @@
 **/result
 **/target
+templates/**/flake.lock

@@ -12,54 +12,27 @@ concurrency:
 
 jobs:
   build:
-    name: Build and cache risc0.nix
+    name: Build risc0.nix
     runs-on: warp-ubuntu-latest-x64-16x
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v16
-        with:
-          name: argumentcomputer
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      - run: nix flake check
-      - run: nix fmt -- --ci
-      - run: nix build .#rust-bin-risc0-latest --print-out-paths
-      - run: nix build .#cargo-risczero --print-out-paths
-      - run: nix build .#risc0-home --print-out-paths
-  
+      - run: nix build .#risc0-toolchain -L --accept-flake-config
+      - run: nix build .#cargo-risczero -L --accept-flake-config
+      - run: nix build .#risc0-cpp-toolchain -L --accept-flake-config
+      - run: nix build .#risc0-home -L --accept-flake-config
+
   test:
     name: Test template dev shell
-    needs: build
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-16x
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: cachix/cachix-action@v16
-        with:
-          name: argumentcomputer
-          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-          skipPush: true
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: "./templates/hello-world -> target"
       - name: Replace risc0.nix URL with local path
         run: |
-          sed -i '/risc0 = {/,/};/s|url = "github:[^"]*"|url = "path:../.."|' flake.nix
+          sed -i 's|url = "github:argumentcomputer/risc0.nix"|url = "path:../.."|' flake.nix
           head -n 20 flake.nix
           nix flake update risc0
         working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix build .#rust-r0 --print-out-paths
+      - run: nix develop --accept-flake-config --command bash -c "cargo run"
         working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix build .#cargo-r0 --print-out-paths
-        working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix build .#r0-home --print-out-paths
-        working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix develop --command bash -c "cargo run"
-        working-directory: ${{ github.workspace }}/templates/hello-world
-
