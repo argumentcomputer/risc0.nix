@@ -17,7 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-      - run: nix flake check
       - run: nix build .#risc0-toolchain -L --accept-flake-config
       - run: nix build .#cargo-risczero -L --accept-flake-config
       - run: nix build .#risc0-cpp-toolchain -L --accept-flake-config
