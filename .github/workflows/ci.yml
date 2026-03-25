@@ -25,7 +25,6 @@ jobs:
 
   test:
     name: Test template dev shell
-    needs: build
     runs-on: warp-ubuntu-latest-x64-16x
     steps:
       - uses: actions/checkout@v6
@@ -39,5 +38,5 @@ jobs:
           head -n 20 flake.nix
           nix flake update risc0
         working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix develop --accept-flake-config -command bash -c "cargo run"
+      - run: nix develop --accept-flake-config --command bash -c "cargo run"
         working-directory: ${{ github.workspace }}/templates/hello-world
