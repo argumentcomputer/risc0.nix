@@ -26,8 +26,9 @@ jobs:
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - run: nix flake check
       - run: nix fmt -- --ci
-      - run: nix build .#rust-bin-risc0-latest --print-out-paths
+      - run: nix build .#risc0-toolchain --print-out-paths
       - run: nix build .#cargo-risczero --print-out-paths
+      - run: nix build .#risc0-cpp-toolchain --print-out-paths
       - run: nix build .#risc0-home --print-out-paths
   
   test:
@@ -50,15 +51,9 @@ jobs:
           workspaces: "./templates/hello-world -> target"
       - name: Replace risc0.nix URL with local path
         run: |
-          sed -i '/risc0 = {/,/};/s|url = "github:[^"]*"|url = "path:../.."|' flake.nix
+          sed -i 's|url = "github:argumentcomputer/risc0.nix"|url = "path:../.."|' flake.nix
           head -n 20 flake.nix
           nix flake update risc0
-        working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix build .#rust-r0 --print-out-paths
-        working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix build .#cargo-r0 --print-out-paths
-        working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix build .#r0-home --print-out-paths
         working-directory: ${{ github.workspace }}/templates/hello-world
       - run: nix develop --command bash -c "cargo run"
         working-directory: ${{ github.workspace }}/templates/hello-world

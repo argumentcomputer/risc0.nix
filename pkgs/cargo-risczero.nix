@@ -7,29 +7,27 @@
   openssl,
   nix-update-script,
 }:
-
 rustPlatform.buildRustPackage rec {
   pname = "cargo-risczero";
-  version = "2.3.1";
+  version = "3.0.5";
 
   src = fetchCrate {
     inherit pname version;
-    hash = "sha256-gkuLqZ1vDY3XfOROLEdfcFODmzV6r+mJWF+EauxYpzw=";
+    hash = "sha256-1tuY+XoZpilak9gc5vDnRDEB1SK+itBWoGNxwefT6xo=";
   };
 
-  src-recursion-hash = "ba5c4f8fae128d90ba6791d99d1927f2b4f73bad2860a2763d3db9ffa4270476"; # That is from cargoDeps/risc0-circuit-recursion/build.rs
+  src-recursion-hash = "744b999f0a35b3c86753311c7efb2a0054be21727095cf105af6ee7d3f4d8849"; # From risc0/circuit/recursion/build.rs
 
   src-recursion = fetchurl {
     url = "https://risc0-artifacts.s3.us-west-2.amazonaws.com/zkr/${src-recursion-hash}.zip";
-    hash = "sha256-ulxPj64SjZC6Z5HZnRkn8rT3O60oYKJ2PT25/6QnBHY="; # This hash should be the same as src-recuresion-hash
+    hash = "sha256-dEuZnwo1s8hnUzEcfvsqAFS+IXJwlc8QWvbufT9NiEk=";
   };
 
   env = {
     RECURSION_SRC_PATH = src-recursion;
   };
 
-  useFetchCargoVendor = true;
-  cargoHash = "sha256-4d5ian5U+pEbjPIsO9JO2sShDJrxyAY0KWZxF9ixk5g=";
+  cargoHash = "sha256-ayKQvhjYawPEl9ryVmDx4J93/EGPSeKds0mOnkRI2Fo=";
 
   nativeBuildInputs = [
     pkg-config
@@ -42,13 +40,13 @@ rustPlatform.buildRustPackage rec {
   # The tests require network access which is not available in sandboxed Nix builds.
   doCheck = false;
 
-  passthru.updateScript = nix-update-script { };
+  passthru.updateScript = nix-update-script {};
 
   meta = {
     description = "Cargo extension to help create, manage, and test RISC Zero projects";
     mainProgram = "cargo-risczero";
     homepage = "https://risczero.com";
-    license = with lib.licenses; [ asl20 ];
-    maintainers = with lib.maintainers; [ cameronfyfe ];
+    license = with lib.licenses; [asl20];
+    maintainers = with lib.maintainers; [cameronfyfe];
   };
 }
