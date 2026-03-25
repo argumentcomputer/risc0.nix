@@ -15,20 +15,20 @@ jobs:
     name: Build risc0.nix
     runs-on: warp-ubuntu-latest-x64-16x
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
       - run: nix flake check
-      - run: nix build .#risc0-toolchain --print-out-paths
-      - run: nix build .#cargo-risczero --print-out-paths
-      - run: nix build .#risc0-cpp-toolchain --print-out-paths
-      - run: nix build .#risc0-home --print-out-paths
+      - run: nix build .#risc0-toolchain -L --accept-flake-config
+      - run: nix build .#cargo-risczero -L --accept-flake-config
+      - run: nix build .#risc0-cpp-toolchain -L --accept-flake-config
+      - run: nix build .#risc0-home -L --accept-flake-config
 
   test:
     name: Test template dev shell
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-16x
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
       - uses: Swatinem/rust-cache@v2
         with:
@@ -39,5 +39,5 @@ jobs:
           head -n 20 flake.nix
           nix flake update risc0
         working-directory: ${{ github.workspace }}/templates/hello-world
-      - run: nix develop --command bash -c "cargo run"
+      - run: nix develop --accept-flake-config -command bash -c "cargo run"
         working-directory: ${{ github.workspace }}/templates/hello-world
